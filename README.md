@@ -28,8 +28,8 @@ $$
 $$
 
 where:
-- the grid spacing is : \(h = \frac{1}{n-1} \)
-- the frocing term : \( f(x,y) = 8\pi^2 \sin(2\pi x)\sin(2\pi y) \)
+- the grid spacing is : $h = \frac{1}{n-1} $
+- the forcing term : $ f(x,y) = 8\pi^2 \sin(2\pi x)\sin(2\pi y) $
 - the exact solution is:
 
 $$
