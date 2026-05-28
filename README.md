@@ -8,9 +8,9 @@ on a unit square domain and Dirichlet condition on the boundaries.
 
 The formulation:
 
-	$$
+$$
 	-\Delta u = f(x,y), \qquad u|_{\partial \Omega} = 0.
-	$$
+$$
 
 The numeric method we use is the **Jacobi iteration** method and parallelize by:
 - MPI
@@ -46,7 +46,7 @@ $$
 
 ## Project structure
 
-'''text
+```text
 project/
 ├── src/
 |    ├──main.cpp
@@ -63,6 +63,6 @@ project/
 |    ├──RESULT.md
 ├──Makefile
 └──README.md
-'''
+```
 
 
