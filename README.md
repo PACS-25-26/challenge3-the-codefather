@@ -53,10 +53,11 @@ project/
 |    ├──solver.cpp
 |    ├──jacobi.cpp
 |    ├──vtk_writer.cpp
-|    ├──
+|    ├──params.cpp
 ├──header/
 |    ├──solver.hpp
 |    ├──jacobi.hpp
+|    ├──params.hpp
 |    ├──vtk_writer.hpp
 ├── test/
 |    ├──test

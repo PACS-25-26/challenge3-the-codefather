@@ -30,3 +30,8 @@ double hybrid_solver(int n, double tol, int maxiter, int rank, int size){
     //...........................
     
 }
+
+
+double serial_solver(int n, double tol, int maxiter){
+    
+}

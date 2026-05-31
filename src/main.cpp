@@ -2,14 +2,18 @@
 #include <omp.h>
 #include <iostream>
 #include "solver.hpp"
+#include "params.hpp"
 
 //--------------------------------
 //     Type of Parallelization
 //-------------------------------
-enum Parallel_mode{MPI,OMP,HYBRID};
+//enum Parallel_mode{MPI,OMP,HYBRID};
 
 int main(int argc,char **argv){
 
+    /*
+
+    spostato tutto in un file separato params (più comodo)
     //-----------------------------
     //       Reading input for:
     //          -   n : matrix size    
@@ -43,6 +47,10 @@ int main(int argc,char **argv){
         }
     }
 
+    */
+
+    parameters p=parse_args(argc,argv);
+    
     //------------------------
     // Possible MPI call
     //------------------------
@@ -50,7 +58,7 @@ int main(int argc,char **argv){
     int rank = 0;
     int size = 1;
 
-    if(m == MPI || m == HYBRID){
+    if(p.mode == MPI || p.mode == HYBRID){
         MPI_Init(&argc,&argv);
         MPI_Comm_rank(MPI_COMM_WORLD,&rank);
         MPI_Comm_size(MPI_COMM_WORLD,&size);
@@ -61,7 +69,7 @@ int main(int argc,char **argv){
     // something for OMP
     //---------------------
 
-    if(m == OMP || m == HYBRID)
+    if(p.mode == OMP || p.mode == HYBRID)
     {
         //....
     }
@@ -70,20 +78,58 @@ int main(int argc,char **argv){
     //        SOLVING
     //----------------------
 
-    if(m == MPI)
-    mpi_solver(n,tol,max_it,rank,size);
+    if(p.mode == MPI)
+    mpi_solver(p,rank,size);
 
-    if(m == OMP)
-    omp_solver(n,tol,max_it);
+    if(p.mode == OMP)
+    omp_solver(p);
 
-    if(m == HYBRID)
-    hybrid_solver(n,tol,max_it,rank,size);
+    if(p.mode == HYBRID)
+    hybrid_solver(p,rank,size);
 
     // -----------------------------
     //        Finalizing MPI 
     // -----------------------------
-    if (m == MPI || m == HYBRID)
+    if (p.mode == MPI || p.mode == HYBRID)
         MPI_Finalize();
+
+
+        //per ora ho tenuto divisione tra mpi omp e ibrido poi per ottimizzare si può tenere solo il caso ibrido che gestisce tutto in teoria:
+        /*
+        MPI_Init(&argc, &argv);
+    
+    int rank, size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    parameters p = parse_args(argc, argv);
+
+    // OMP: si controlla tramite variabile d'ambiente OMP_NUM_THREADS
+    // MPI: si controlla da quante istanze lanci con mpirun -np X
+    // Non serve un enum mode — è già implicito nel lancio
+
+    hybrid_solver(p, rank, size);  // unica funzione, gestisce tutto
+
+    MPI_Finalize();
+    return 0;
+        */
+
+        //questo dovrebbe bastare
+
+        // bash:
+        /*
+            # Seriale
+            ./solver --n 128
+
+            # Solo MPI
+            mpirun -np 4 ./solver --n 128
+
+            # Solo OMP
+            OMP_NUM_THREADS=4 ./solver --n 128
+
+            # Hybrid
+            OMP_NUM_THREADS=2 mpirun -np 4 ./solver --n 128
+        */
 
     return 0;
 }

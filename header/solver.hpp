@@ -1,9 +1,11 @@
 #ifndef SOLVER_HPP
 #define SOLVER_HPP
 
-double serial_solver(int n, double tol, int maxiter);
-double omp_solver(int n, double tol, int maxiter);
-double mpi_solver(int n, double tol, int maxiter, int rank, int size);
-double hybrid_solver(int n, double tol, int maxiter, int rank, int size);
+#include "params.hpp"
+
+double serial_solver(parameters p);
+double omp_solver(parameters p);
+double mpi_solver(parameters p, int rank, int size);
+double hybrid_solver(parameters p, int rank, int size);
 
 #endif SOLVER_HPP
