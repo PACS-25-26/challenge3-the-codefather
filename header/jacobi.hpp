@@ -71,7 +71,7 @@ class Matrix_Sol{
     
  // possibile funzione errore L2... per benchmark con soluzione esatta
 
-    double L2_err();
+    double L2_err(Matrix_Sol& M,const std::function<double(double,double)>& u_ex);
 
 #endif //JACOBI_HPP
  //main structure of the solution...
