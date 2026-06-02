@@ -60,6 +60,8 @@ class Matrix_Sol{
    
     //altre possibili get o set per MPI...
 
+    double* row_ptr(int local_row)     { return &U[local_row * n]; }
+
 };
 
  // main function:

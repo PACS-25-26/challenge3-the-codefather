@@ -3,7 +3,7 @@
 double Jacobi_update(Matrix_Sol& M,int row_lo, int row_hi,
                          const std::function<double(double,double)>& f)
       {
-        int h=M.get_h();
+        double h=M.get_h();
         
         double iter_err=0.0;
 
@@ -19,7 +19,7 @@ double Jacobi_update(Matrix_Sol& M,int row_lo, int row_hi,
             M.at_new(i,j)=Uk;
 
             double diff= Uk-M.at(i,j);
-            iter_err += pow(diff,2);
+            iter_err += diff*diff;
           }
 
         }
