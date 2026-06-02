@@ -42,17 +42,17 @@ double mpi_solver(parameters p, int rank, int size){
         if(rank > 0){
             //sending to previous rank and recieving from previous rank
             //non sono sicuro di dove puntano 
-            MPI_Sendrecv(M.row_ptr(1),   n, MPI_DOUBLE, rank-1, 0,
-                         M.row_ptr(0),         n, MPI_DOUBLE, rank-1, 1,
-                         MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Sendrecv(M.row_ptr(1), n, MPI_DOUBLE, rank-1, 0,
+                 M.row_ptr(0), n, MPI_DOUBLE, rank-1, 1,
+                 MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         }
 
         if(rank<size-1){
             // same as before with last row (ghost one)
             //controllo anche qui se gli indici sono corretti
-            MPI_Sendrecv(M.row_ptr(loc_row-1),  n, MPI_DOUBLE, rank+1, 1,
-                         M.row_ptr(loc_row),     n, MPI_DOUBLE, rank+1, 0,
-                         MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Sendrecv(M.row_ptr(loc_row), n, MPI_DOUBLE, rank+1, 1,
+                 M.row_ptr(loc_row + 1), n, MPI_DOUBLE, rank+1, 0,
+                 MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         }
         double err=Jacobi_update(M,1,n-1,p.f);// non considero la prima e l'ultima riga perchè boundary
         
