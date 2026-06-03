@@ -4,6 +4,7 @@
 #include <cmath>
 #include <functional>
 #include <vector>
+#include <omp.h>
 
 class Matrix_Sol{
 
@@ -25,7 +26,11 @@ class Matrix_Sol{
     Matrix_Sol(int n,int row_start,int row_end) : n(n) ,row_start(row_start),row_end(row_end),U((row_end - row_start) * n, 0.0),
           U_new((row_end - row_start) * n, 0.0)
           {
-            h=(1.0/(n-1));
+            if (n <= 1)
+            throw std::invalid_argument("n must be greater than 1");
+
+            h = 1.0 / (n - 1);
+
           }
 
     void swap_buffers() 
