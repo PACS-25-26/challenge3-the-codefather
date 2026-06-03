@@ -5,7 +5,7 @@
 
 double serial_solver(parameters p);
 double omp_solver(parameters p);
-double mpi_solver(parameters p, int rank, int size);
+//double mpi_solver(parameters p, int rank, int size); //doppione 
 double hybrid_solver(parameters p, int rank, int size);
 
 #endif SOLVER_HPP

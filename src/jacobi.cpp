@@ -7,6 +7,7 @@ double Jacobi_update(Matrix_Sol& M,int row_lo, int row_hi,
         
         double iter_err=0.0;
 
+        #pragma omp parallel for reduction(+:iter_err) collapse(2) schedule(static) // rig aggiunta per omp: è una flag quindi lavora in parallelo solo se lo chiamo in parallelo
         for (int i=row_lo;i<row_hi;++i){
           for (int j=1;j<M.get_n()-1;++j){ // need to update U(i,j) for i,j =2,.....n-1
             int iglo=M.get_row_start()+i;

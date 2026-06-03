@@ -16,7 +16,7 @@
     //--------------------------------
     //     Type of Parallelization
     //-------------------------------
-    enum Parallel_mode{MPI,OMP,HYBRID};
+    enum Parallel_mode{SERIAL,OMP,HYBRID};
 
 struct parameters{
     
