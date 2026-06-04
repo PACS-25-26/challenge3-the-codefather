@@ -147,7 +147,10 @@ double hybrid_solver(parameters p, int rank, int size) {
     double local_l2 = L2_err(M, p.u_ex);
     double global_l2 = 0.0;
     if (size > 1) {
-        MPI_Allreduce(&local_l2, &global_l2, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(&local_l2, &global_l2, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD); 
+        // I think should be max not mpi sum as " Each processor checks its own local convergence criterion; then the local information
+        //is exchanged among all ranks. Convergence is reached if all ranks satisfy the stopping
+        //criterion"
     } else {
         global_l2 = local_l2;
     }

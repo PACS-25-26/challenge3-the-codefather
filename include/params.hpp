@@ -40,4 +40,4 @@ struct parameters{
 parameters parse_args(int argc, char** argv);
 
 
-#endif PARAMS_HPP
+#endif //PARAMS_HPP

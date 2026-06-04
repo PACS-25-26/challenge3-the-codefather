@@ -29,7 +29,7 @@ $$
 
 where:
 - the grid spacing is : $h = \frac{1}{n-1} $
-- the forcing term : $ f(x,y) = 8\pi^2 \sin(2\pi x)\sin(2\pi y) $
+- the forcing term : $f(x,y) = 8\pi^2 \sin(2\pi x)\sin(2\pi y)$
 - the exact solution is:
 
 $$
@@ -39,10 +39,33 @@ $$
 
 ## main function
 
--
-- 
-- 
-- 
+- # Build
+
+  ```bash
+  make
+  ```
+
+- # Run
+
+  ```bash
+  # Hybrid
+  OMP_NUM_THREADS=2 mpirun -np 4 ./solver --mode MPI --n 128
+  ```
+
+- # Output
+
+  I file VTK vengono salvati in `output/` e possono essere visualizzati con ParaView:
+
+  ```bash
+  paraview output/solution_n128.vtk
+  ```
+
+- # Clean
+
+  ```bash
+  make clean      # rimuove build/ e l'eseguibile
+  make distclean  # rimuove anche output/
+  ```
 
 ## Project structure
 
@@ -54,16 +77,16 @@ project/
 |    ├──jacobi.cpp
 |    ├──vtk_writer.cpp
 |    ├──params.cpp
+|    └──io.cpp
 ├──header/
 |    ├──solver.hpp
 |    ├──jacobi.hpp
 |    ├──params.hpp
 |    ├──vtk_writer.hpp
+|    └──io.hpp
 ├── test/
 |    ├──test
-|    ├──RESULT.md
+|    └──RESULT.md
 ├──Makefile
 └──README.md
 ```
-
-
