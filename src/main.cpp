@@ -4,84 +4,57 @@
 #include "solver.hpp"
 #include "params.hpp"
 
+
+int main(int argc, char **argv) {
+    // 1. Initialize MPI
+    // (For Hybrid OpenMP/MPI, MPI_Init_thread is safer, but MPI_Init works for basic setups)
+    int provided;
+    MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
+
+    int rank = 0, size = 1;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    // 2. Parse arguments
+    parameters p = parse_args(argc, argv);
+
+    if (rank == 0) {
+        std::cout << "--- Starting Laplace Solver ---\n"
+                  << "Grid size (n): " << p.n << "\n"
+                  << "MPI Ranks:     " << size << "\n"
+                  << "Max Iters:     " << p.max_it << "\n"
+                  << "-------------------------------\n";
+    }
+
+    // 3. Run the unified solver
+    // The solver will handle the math, print the iterations, and export the VTK file.
+    double final_error = hybrid_solver(p, rank, size);
+
+    // 4. Clean up
+    MPI_Finalize();
+    return 0;
+}
+
 //--------------------------------
 //     Type of Parallelization
 //-------------------------------
 //enum Parallel_mode{MPI,OMP,HYBRID};
 
-int main(int argc,char **argv){
-
-   
-
-    parameters p=parse_args(argc,argv);
-    
-    //------------------------
-    // Possible MPI call
-    //------------------------
-
-    int rank = 0;
-    int size = 1;
-
-    if( p.mode == HYBRID){
-        MPI_Init(&argc,&argv);
-        MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-        MPI_Comm_size(MPI_COMM_WORLD,&size);
-        // cannot initialize here rank and size because i need them also after
-    }
-
-    //---------------------
-    // something for OMP
-    //---------------------
-
-    if(p.mode == OMP || p.mode == HYBRID)
-    {
-        //....
-    }
-
-    //-----------------------
-    //        SOLVING
-    //----------------------
-
-    if(p.mode == SERIAL)
-    serial_solver(p);
-
-    if(p.mode == OMP)
-    omp_solver(p);
-
-    if(p.mode == HYBRID)
-    hybrid_solver(p,rank,size);
-
-    // -----------------------------
-    //        Finalizing MPI 
-    // -----------------------------
-    if ( p.mode == HYBRID)
-        MPI_Finalize();
-
-
-        //per ora ho tenuto divisione tra mpi omp e ibrido poi per ottimizzare si può tenere solo il caso ibrido che gestisce tutto in teoria:
-        /*
-        MPI_Init(&argc, &argv);
-    
-    int rank, size;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
-
-    parameters p = parse_args(argc, argv);
-
     // OMP: si controlla tramite variabile d'ambiente OMP_NUM_THREADS
     // MPI: si controlla da quante istanze lanci con mpirun -np X
-    // Non serve un enum mode — è già implicito nel lancio
+    // Non serve un enum mod — è già implicito nel lancio
+    /*
 
     hybrid_solver(p, rank, size);  // unica funzione, gestisce tutto
 
     MPI_Finalize();
     return 0;
-        */
+        
 
         //questo dovrebbe bastare
 
         // bash:
-        /*
+        
             # Seriale
             ./solver --n 128
 
@@ -93,11 +66,8 @@ int main(int argc,char **argv){
 
             # Hybrid
             OMP_NUM_THREADS=2 mpirun -np 4 ./solver --n 128
-        */
-
-    return 0;
-}
-
+        
+    */
 
 
  /*

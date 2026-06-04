@@ -5,6 +5,7 @@
 #include <functional>
 #include <vector>
 #include <omp.h>
+#include <stdexcept>
 
 class Matrix_Sol{
 

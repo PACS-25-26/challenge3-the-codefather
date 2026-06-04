@@ -10,9 +10,7 @@ parameters parse_args(int argc, char** argv){
         if(str == "--max_it") p.max_it = std::stoi(argv[++i]);
         if(str == "--mode"){
             std::string m =argv[++i];
-            if(m == "MPI") p.mode = MPI;
-            if(m == "OMP") p.mode = OMP;
-            if(m == "HYBRID") p.mode = HYBRID;
+            p.mode = HYBRID;
         }
 
         // si può aggiungere anche la scelta della funzione..

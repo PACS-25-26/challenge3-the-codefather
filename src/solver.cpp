@@ -1,5 +1,6 @@
 #include "solver.hpp"
 #include "jacobi.hpp"
+#include "io.hpp"
 
 #include <mpi.h>
 #include <omp.h>
@@ -156,7 +157,12 @@ double hybrid_solver(parameters p, int rank, int size) {
         std::cout << ">> Iterations: " << it << " | Final Global L2 Error: " << total_l2_error << "\n";
     }
 
+    // Right before the solver finishes, export the data!
+    export_to_vtk(M, p, rank, size, num_owned);
+
+
     return total_l2_error;
+
 }
 
 
