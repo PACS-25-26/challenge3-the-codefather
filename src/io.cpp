@@ -10,7 +10,19 @@ void export_to_vtk(Matrix_Sol& M, parameters p, int rank, int size, int num_owne
     int n = p.n;
     double h = M.get_h();
     
-    int send_count = num_owned * n; 
+    // Determine the exact number of rows this rank should send
+    int rows_to_send = num_owned;
+    int start_send_row = 1;
+
+    if (rank == 0) {
+        rows_to_send += 1;    // Include top boundary
+        start_send_row = 0;   // Start from local row 0
+    }
+    if (rank == size - 1) {
+        rows_to_send += 1;    // Include bottom boundary
+    }
+
+    int send_count = rows_to_send * n; 
     std::vector<int> recv_counts(size, 0);
     std::vector<int> displs(size, 0);
 
@@ -22,14 +34,14 @@ void export_to_vtk(Matrix_Sol& M, parameters p, int rank, int size, int num_owne
     std::vector<double> global_U;
     if (rank == 0) {
         global_U.resize(n * n, 0.0); 
-        displs[0] = n; // Skip first row (boundary of 0s)
+        displs[0] = 0; // Start at the absolute beginning of the array
         for (int i = 1; i < size; ++i) {
             displs[i] = displs[i - 1] + recv_counts[i - 1];
         }
     }
 
-    // Gather solution data
-    MPI_Gatherv(M.row_ptr(1), send_count, MPI_DOUBLE,
+    // Gather solution data including active boundaries
+    MPI_Gatherv(M.row_ptr(start_send_row), send_count, MPI_DOUBLE,
                 global_U.data(), recv_counts.data(), displs.data(),
                 MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
