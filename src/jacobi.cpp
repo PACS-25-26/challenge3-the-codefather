@@ -39,7 +39,7 @@ double L2_err(Matrix_Sol& M, const std::function<double(double,double)>& u_ex) {
 
     #pragma omp parallel for reduction(+:l2e) collapse(2)
     for (int i = 1; i <= num_owned; ++i) {
-        for (int j = 0; j < n; ++j) {
+        for (int j = 1; j < n-1; ++j) {
             double xi = (global_row_start + i) * h;
             double yj = j * h;
 

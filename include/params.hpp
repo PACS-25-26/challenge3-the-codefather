@@ -27,7 +27,7 @@ struct parameters{
 
     // forcing term
     std::function<double(double,double)> f =[](double x,double y){
-        return 8*M_PI*sin(2*M_PI*x)*sin(2*M_PI*y);
+        return 8*M_PI*M_PI*sin(2*M_PI*x)*sin(2*M_PI*y);
     };
 
     //exact solution for benchmarking
