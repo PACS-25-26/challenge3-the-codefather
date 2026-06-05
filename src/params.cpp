@@ -16,6 +16,12 @@ parameters parse_args(int argc, char** argv){
         else if (str == "--max_it") {
             p.max_it = std::stoi(argv[++i]);
         } 
+
+        else if (str == "--vtk_type") {
+            std::string m = argv[++i];
+            if (m == "FLAT")  p.vtk_type = FLAT;
+            else if (m == "SURFACE")  p.vtk_type = SURFACE;
+        }
         
         // 2. Parallelization Framework Choice
         else if (str == "--mode") {

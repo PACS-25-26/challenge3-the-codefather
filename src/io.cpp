@@ -48,7 +48,7 @@ void export_to_vtk_3d(Matrix_Sol& M, parameters p, int rank, int size, int num_o
     // Write file
     if (rank == 0) {
         // Change this line to prepend the output directory path:
-        std::string filename = "output/solution_n" + std::to_string(n) + ".vtk";
+        std::string filename = "output/solution_n" + std::to_string(n) + "_3d.vtk";
         std::ofstream vtk_file(filename);
 
         if (!vtk_file) {
@@ -129,7 +129,7 @@ void export_to_vtk(Matrix_Sol& M, parameters p, int rank, int size, int num_owne
 
     // Write file
     if (rank == 0) {
-        std::string filename = "solution_n" + std::to_string(n) + ".vtk";
+        std::string filename = "solution_n" + std::to_string(n) + "_2d.vtk";
         std::ofstream vtk_file(filename);
 
         if (!vtk_file) {

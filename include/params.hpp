@@ -19,6 +19,9 @@
     //     Type of Boundary conditions
     enum BCType { DIRICHLET, NEUMANN, ROBIN };
 
+    //     Type export in vtk file to visualize in paraview
+    enum VTKType { FLAT, SURFACE};
+
 struct parameters{
     
     int n = 32;
@@ -26,6 +29,7 @@ struct parameters{
     int max_it=1000;
     Parallel_mode mode = HYBRID;
     BCType bc_type = DIRICHLET; // New parameter to track boundary physics
+    VTKType vtk_type = SURFACE; // New parameter to track VTK export type
 
     // forcing term
     std::function<double(double,double)> f =[](double x,double y){
