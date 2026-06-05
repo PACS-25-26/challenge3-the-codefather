@@ -14,7 +14,7 @@
     //------------------------------------
 
     //     Type of Parallelization
-    enum Parallel_mode {SERIAL,OMP,HYBRID};
+    enum Parallel_mode {SERIAL,HYBRID};
 
     //     Type of Boundary conditions
     enum BCType { DIRICHLET, NEUMANN, ROBIN };

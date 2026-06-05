@@ -20,7 +20,8 @@ int main(int argc, char **argv) {
                   << "Grid size (n): " << p.n << "\n"
                   << "MPI Ranks:     " << size << "\n"
                   << "Max Iters:     " << p.max_it << "\n"
-                  << "Mode:          " << (p.mode == SERIAL ? "SERIAL" : (p.mode == OMP ? "OMP" : "HYBRID")) << "\n"
+                  << "Mode:          " << (p.mode == SERIAL ? "SERIAL" : "HYBRID") << "\n"
+                  << "Boundary Conditions:          " << (p.bc_type == DIRICHLET ? "DIRICHLET" : (p.bc_type == NEUMANN ? "NEUMANN" : "ROBIN")) << "\n"
                   << "-------------------------------\n";
     }
 
@@ -30,9 +31,6 @@ int main(int argc, char **argv) {
     if (p.mode == SERIAL) {
         if (rank == 0) final_error = serial_solver(p);
     } 
-    else if (p.mode == OMP) {
-        if (rank == 0) final_error = omp_solver(p);
-    } 
     else if (p.mode == HYBRID) {
         final_error = hybrid_solver(p, rank, size);
     }
@@ -40,7 +38,7 @@ int main(int argc, char **argv) {
     double end_time = MPI_Wtime();
 
     if (rank == 0) {
-        std::cout << ">> Total Execution Time: " << (end_time - start_time) << " seconds.\n";
+        std::cout << ">> Total Execution Time: " << (end_time - start_time) << " seconds.\n\n";
     }
 
     MPI_Finalize();

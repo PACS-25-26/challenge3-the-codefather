@@ -38,34 +38,6 @@ double serial_solver(parameters p) {
 //----------------------------
 //              OMP solver
 //-----------------------------
-double omp_solver(parameters p) {
-    // Relies on environment variable OMP_NUM_THREADS (handled in run script)
-    int n = p.n;
-    double h = 1.0 / (n - 1);
-    
-    Matrix_Sol M(n, -1, n);
-    init_boundaries(M, p, 0, 1);
-
-    int it = 0;
-    double global_err = p.tol + 1.0;
-
-    while (it < p.max_it && global_err > p.tol) {
-        ++it;
-        double err = Jacobi_update(M, 1, n - 1, p.f);
-        update_boundaries(M, p, 0, 1);
-        global_err = std::sqrt(err * h);
-    }
-
-    double l2_error = std::sqrt(L2_err(M, p.u_ex) * h);
-    std::cout << "[OMP] Iters: " << it << " | L2 Error: " << l2_error << "\n";
-    
-    export_to_vtk(M, p, 0, 1, n - 2);
-    return l2_error;
-}
-
-//----------------------------
-//          HYBRID solver
-//-----------------------------
 
 double hybrid_solver(parameters p, int rank, int size) {
     int n = p.n;
@@ -144,7 +116,7 @@ double hybrid_solver(parameters p, int rank, int size) {
     // Right before the solver finishes, export the data!
     if (p.vtk_type == FLAT) {
         export_to_vtk(M, p, rank, size, num_owned);
-    } else (p.vtk_type == SURFACE) {
+    } else {
         export_to_vtk_3d(M, p, rank, size, num_owned);
     }
 

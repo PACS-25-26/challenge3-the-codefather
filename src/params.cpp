@@ -27,7 +27,6 @@ parameters parse_args(int argc, char** argv){
         else if (str == "--mode") {
             std::string m = argv[++i];
             if (m == "SERIAL")  p.mode = SERIAL;
-            else if (m == "OMP")     p.mode = OMP;
             else if (m == "HYBRID")  p.mode = HYBRID;
         } 
         

@@ -24,7 +24,7 @@ done
 
 echo ""
 echo "-------- 2. MPI SCALABILITY --------"
-echo "Varying MPI Ranks (np) for n=256"
+echo "Varying MPI Ranks (np) in 1 2 4 for n=256"
 
 for np in 1 2 4; do
     echo "--- np=$np ---"
