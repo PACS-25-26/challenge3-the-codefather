@@ -36,36 +36,69 @@ $$
 	u(x,y) = \sin(2\pi x)\sin(2\pi y)
 $$
 
+## 1. Features
+* **Hybrid Parallelization:** Combines distributed memory scaling (MPI) with shared-memory multi-threading (OpenMP) for optimal compute efficiency.
+* **Flexible Boundary Conditions:** Supports homogeneous/non-homogeneous **Dirichlet**, **Neumann**, and **Robin** boundary condition models.
+* **Mathematical Test Cases:** Pre-configured analytical functions for strict benchmarking against exact solutions:
+  * `SINUSOIDAL`: Perfect for Homogeneous Dirichlet.
+  * `EXPONENTIAL`: Perfect for Non-Homogeneous Dirichlet.
+  * `POLYNOMIAL`: Perfect for Non-Homogeneous Neumann or Robin.
+* **VTK Output Generation:** Exports simulation solutions as `FLAT` (2D structured points) or `SURFACE` (3D topological surface) for immediate rendering in ParaView.
 
-## main function
+---
 
-- # Build
+## 2. Prerequisites
 
-  ```bash
-  make
-  ```
+Before building and running the suite, ensure your environment has the following software installed:
+* **MPI Library:** OpenMPI or MPICH (`mpic++` compiler wrapper and `mpirun` runtime wrapper).
+* **OpenMP Runtime Library:** Typically bundled with your C++ compiler (e.g., GCC/Clang).
+* **Build Tools:** `make` utility.
+* **Documentation Generator:** `doxygen` (optional, for building code documentation).
 
-- # Run
+---
 
-  ```bash
-  # Hybrid
-  OMP_NUM_THREADS=2 mpirun -np 4 ./solver --n 128
-  ```
+## 3. Compilation & Build Instructions
 
-- # Output
+A `Makefile` is provided to manage the compilation process. To ensure a clean, optimized compilation state, run the following commands from your project root directory:
 
-  VTK files are saved in `output/` directory and they can be visualize with ParaView:
+```bash
+# Remove old object files and binaries
+make clean
 
-  ```bash
-  paraview output/solution_n128.vtk
-  ```
+# Compile the project with high optimization flags (-O2) and OpenMP enabled
+make all
+```
 
-- # Clean
+Additional Make targets available:
+* `make docs`: Generates code documentation using Doxygen (saved in `docs/`).
+* `make distclean`: Performs a deep clean, removing build artifacts, test data, and generated VTK outputs.
 
-  ```bash
-  make clean      # remove build directory and executable file
-  make distclean  # remove build directory executable file and also the output directory
-  ```
+---
+
+## 4. Usage & Command-Line Arguments
+
+The compiled executable `solver` can be run manually with highly customizable parameters.
+
+```bash
+mpirun -np <ranks> ./solver [arguments]
+```
+
+### Available Arguments:
+* `--n <int>`: Grid size dimension $N \times N$ (default: 32).
+* `--tol <double>`: Error tolerance for convergence (default: 1e-5).
+* `--max_it <int>`: Maximum number of Jacobi iterations (default: 1000).
+* `--mode <SERIAL|HYBRID>`: Execution mode (default: HYBRID).
+* `--bc_type <DIRICHLET|NEUMANN|ROBIN>`: Physical boundary condition strategy (default: DIRICHLET).
+* `--case <SINUSOIDAL|EXPONENTIAL|POLYNOMIAL>`: Mathematical test case (default: SINUSOIDAL).
+* `--vtk_type <FLAT|SURFACE>`: Format for VTK export (default: SURFACE).
+
+### Example Run:
+```bash
+mpirun -np 4 ./solver --n 128 --tol 1e-6 --max_it 5000 --mode HYBRID --bc_type ROBIN --case POLYNOMIAL --vtk_type SURFACE
+```
+
+---
+
 
 ## Project structure
 
@@ -90,3 +123,23 @@ project/
 ├──Makefile
 └──README.md
 ```
+
+
+
+
+
+## 5. Automated Benchmarking Suite
+
+An automated execution script is provided in the `test/` directory. It profiles the solver under two separate regimes:
+1. **Serial Grid Scaling:** Measures performance trends as grid refinement levels double ($16 \times 16$ to $128 \times 128$).
+2. **Hybrid Parallel Scaling:** Evaluates compute efficiency across combinations of MPI distributed memory ranks and OpenMP shared memory threads for a fixed $256 \times 256$ resolution.
+
+### Running the Suite:
+Make sure the bash script has permission to execute, then run it from the root directory:
+```bash
+chmod +x test/run_tests.sh
+./test/run_tests.sh
+```
+*Note: The script automatically handles path management. Logs are saved in `test/data/` and hardware information in `test/hw.info`.*
+
+---
