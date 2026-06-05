@@ -49,12 +49,12 @@ $$
 
   ```bash
   # Hybrid
-  OMP_NUM_THREADS=2 mpirun -np 4 ./solver --mode MPI --n 128
+  OMP_NUM_THREADS=2 mpirun -np 4 ./solver --n 128
   ```
 
 - # Output
 
-  I file VTK vengono salvati in `output/` e possono essere visualizzati con ParaView:
+  VTK files are saved in `output/` directory and they can be visualize with ParaView:
 
   ```bash
   paraview output/solution_n128.vtk
@@ -63,8 +63,8 @@ $$
 - # Clean
 
   ```bash
-  make clean      # rimuove build/ e l'eseguibile
-  make distclean  # rimuove anche output/
+  make clean      # remove build directory and executable file
+  make distclean  # remove build directory executable file and also the output directory
   ```
 
 ## Project structure
