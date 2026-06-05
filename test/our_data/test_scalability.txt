@@ -1,0 +1,186 @@
+./test/run_tests.sh
+=== Scalability Test Setup ===
+Extracting hardware info...
+Hardware info saved to test/hw.info
+
+--------- 1. SERIAL TEST ---------
+Varying grid size (n)
+n=16: --- Starting Laplace Solver ---
+Grid size (n): 16
+MPI Ranks:     1
+Max Iters:     10000
+Mode:          SERIAL
+Boundary Conditions:          DIRICHLET
+-------------------------------
+[SERIAL] Iters: 186 | L2 Error: 0.465776
+[IO] Exported successfully to output/solution_n16_2d.vtk
+>> Total Execution Time: 0.0059393 seconds.
+
+n=32: --- Starting Laplace Solver ---
+Grid size (n): 32
+MPI Ranks:     1
+Max Iters:     10000
+Mode:          SERIAL
+Boundary Conditions:          DIRICHLET
+-------------------------------
+[SERIAL] Iters: 661 | L2 Error: 0.32211
+[IO] Exported successfully to output/solution_n32_2d.vtk
+>> Total Execution Time: 0.0242391 seconds.
+
+n=64: --- Starting Laplace Solver ---
+Grid size (n): 64
+MPI Ranks:     1
+Max Iters:     10000
+Mode:          SERIAL
+Boundary Conditions:          DIRICHLET
+-------------------------------
+[SERIAL] Iters: 2187 | L2 Error: 0.225479
+[IO] Exported successfully to output/solution_n64_2d.vtk
+>> Total Execution Time: 0.333018 seconds.
+
+n=128: --- Starting Laplace Solver ---
+Grid size (n): 128
+MPI Ranks:     1
+Max Iters:     10000
+Mode:          SERIAL
+Boundary Conditions:          DIRICHLET
+-------------------------------
+[SERIAL] Iters: 7350 | L2 Error: 0.158531
+[IO] Exported successfully to output/solution_n128_2d.vtk
+>> Total Execution Time: 4.462 seconds.
+
+
+-------- 2. MPI SCALABILITY --------
+Varying MPI Ranks (np) in 1 2 4 for n=256
+--- np=1 ---
+--- Starting Laplace Solver ---
+Grid size (n): 256
+MPI Ranks:     1
+Max Iters:     50000
+Mode:          HYBRID
+Boundary Conditions:          DIRICHLET
+-------------------------------
+[HYBRID] Iters: 25671 | Final Global L2 Error: 0.00288879
+[IO] Exported successfully to output/solution_n256_3d.vtk
+>> Total Execution Time: 37.9206 seconds.
+
+--- np=2 ---
+--- Starting Laplace Solver ---
+Grid size (n): 256
+MPI Ranks:     2
+Max Iters:     50000
+Mode:          HYBRID
+Boundary Conditions:          DIRICHLET
+-------------------------------
+[HYBRID] Iters: 25671 | Final Global L2 Error: 0.00288879
+[IO] Exported successfully to output/solution_n256_3d.vtk
+>> Total Execution Time: 24.6706 seconds.
+
+--- np=4 ---
+--- Starting Laplace Solver ---
+Grid size (n): 256
+MPI Ranks:     4
+Max Iters:     50000
+Mode:          HYBRID
+Boundary Conditions:          DIRICHLET
+-------------------------------
+^C
+------- 3. HYBRID SCALABILITY --------
+varing both np and NUM_THREADS for n=256
+--- np=1 | OMP_NUM_THREADS=1 ---
+--- Starting Laplace Solver ---
+Grid size (n): 256
+MPI Ranks:     1
+Max Iters:     50000
+Mode:          HYBRID
+Boundary Conditions:          DIRICHLET
+-------------------------------
+[HYBRID] Iters: 25671 | Final Global L2 Error: 0.00288879
+[IO] Exported successfully to output/solution_n256_3d.vtk
+>> Total Execution Time: 65.8542 seconds.
+
+--- np=1 | OMP_NUM_THREADS=2 ---
+--- Starting Laplace Solver ---
+Grid size (n): 256
+MPI Ranks:     1
+Max Iters:     50000
+Mode:          HYBRID
+Boundary Conditions:          DIRICHLET
+-------------------------------
+[HYBRID] Iters: 25671 | Final Global L2 Error: 0.00288879
+[IO] Exported successfully to output/solution_n256_3d.vtk
+>> Total Execution Time: 38.3073 seconds.
+
+--- np=1 | OMP_NUM_THREADS=4 ---
+--- Starting Laplace Solver ---
+Grid size (n): 256
+MPI Ranks:     1
+Max Iters:     50000
+Mode:          HYBRID
+Boundary Conditions:          DIRICHLET
+-------------------------------
+[HYBRID] Iters: 25671 | Final Global L2 Error: 0.00288879
+[IO] Exported successfully to output/solution_n256_3d.vtk
+>> Total Execution Time: 42.5397 seconds.
+
+--- np=2 | OMP_NUM_THREADS=1 ---
+--- Starting Laplace Solver ---
+Grid size (n): 256
+MPI Ranks:     2
+Max Iters:     50000
+Mode:          HYBRID
+Boundary Conditions:          DIRICHLET
+-------------------------------
+[HYBRID] Iters: 25671 | Final Global L2 Error: 0.00288879
+[IO] Exported successfully to output/solution_n256_3d.vtk
+>> Total Execution Time: 39.0196 seconds.
+
+--- np=2 | OMP_NUM_THREADS=2 ---
+--- Starting Laplace Solver ---
+Grid size (n): 256
+MPI Ranks:     2
+Max Iters:     50000
+Mode:          HYBRID
+Boundary Conditions:          DIRICHLET
+-------------------------------
+[HYBRID] Iters: 25671 | Final Global L2 Error: 0.00288879
+[IO] Exported successfully to output/solution_n256_3d.vtk
+>> Total Execution Time: 25.1168 seconds.
+
+--- np=2 | OMP_NUM_THREADS=4 ---
+--- Starting Laplace Solver ---
+Grid size (n): 256
+MPI Ranks:     2
+Max Iters:     50000
+Mode:          HYBRID
+Boundary Conditions:          DIRICHLET
+-------------------------------
+[HYBRID] Iters: 25671 | Final Global L2 Error: 0.00288879
+[IO] Exported successfully to output/solution_n256_3d.vtk
+>> Total Execution Time: 27.6517 seconds.
+
+--- np=4 | OMP_NUM_THREADS=1 ---
+--- Starting Laplace Solver ---
+Grid size (n): 256
+MPI Ranks:     4
+Max Iters:     50000
+Mode:          HYBRID
+Boundary Conditions:          DIRICHLET
+-------------------------------
+[HYBRID] Iters: 25671 | Final Global L2 Error: 0.00288879
+[IO] Exported successfully to output/solution_n256_3d.vtk
+>> Total Execution Time: 25.0285 seconds.
+
+--- np=4 | OMP_NUM_THREADS=2 ---
+--- Starting Laplace Solver ---
+Grid size (n): 256
+MPI Ranks:     4
+Max Iters:     50000
+Mode:          HYBRID
+Boundary Conditions:          DIRICHLET
+-------------------------------
+[HYBRID] Iters: 25671 | Final Global L2 Error: 0.00288879
+[IO] Exported successfully to output/solution_n256_3d.vtk
+>> Total Execution Time: 16.8602 seconds.
+
+Tests complete! Logs saved in test/data/

@@ -10,8 +10,7 @@ mkdir -p test/data
 mkdir -p output
 
 echo "Extracting hardware info..."
-cat /proc/cpuinfo > test/hw.info
-lscpu >> test/hw.info 2>/dev/null
+lscpu > test/hw.info 2>/dev/null
 echo "Hardware info saved to test/hw.info"
 
 echo ""
