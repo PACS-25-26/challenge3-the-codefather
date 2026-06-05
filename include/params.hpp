@@ -13,17 +13,19 @@
     //          -   mode: Parallel_mode
     //------------------------------------
 
-    //--------------------------------
     //     Type of Parallelization
-    //-------------------------------
-    enum Parallel_mode{SERIAL,OMP,HYBRID};
+    enum Parallel_mode {SERIAL,OMP,HYBRID};
+
+    //     Type of Boundary conditions
+    enum BCType { DIRICHLET, NEUMANN, ROBIN };
 
 struct parameters{
     
     int n = 32;
     double tol =1e-5;
     int max_it=1000;
-    Parallel_mode mode =HYBRID;
+    Parallel_mode mode = HYBRID;
+    BCType bc_type = DIRICHLET; // New parameter to track boundary physics
 
     // forcing term
     std::function<double(double,double)> f =[](double x,double y){

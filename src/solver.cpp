@@ -110,6 +110,9 @@ double hybrid_solver(parameters p, int rank, int size) {
     // Local row 0 is top ghost/boundary. Local row (num_owned + 1) is bottom ghost/boundary.
     Matrix_Sol M(n, start_row_global - 1, end_row_global + 1);
 
+    //Initialize the non-homogeneous boundary functions!
+    init_boundaries(M, p, rank, size);
+
     int it = 0;
     double global_err = p.tol + 1.0;
 
@@ -133,6 +136,9 @@ double hybrid_solver(parameters p, int rank, int size) {
         // 3. Update local row space (always 1 to num_owned + 1 because bounds are exclusive)
         double local_sum = Jacobi_update(M, 1, num_owned + 1, p.f);
 
+        //Dynamically recalculate Neumann/Robin boundaries!
+        update_boundaries(M, p, rank, size);
+
         // 4. Mathematically Correct Parallel Reduction
         double global_sum = 0.0;
         if (size > 1) {
@@ -153,7 +159,7 @@ double hybrid_solver(parameters p, int rank, int size) {
     double global_l2 = 0.0;
     if (size > 1) {
         MPI_Allreduce(&local_l2, &global_l2, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD); 
-        // I think should be max not mpi sum as " Each processor checks its own local convergence criterion; then the local information
+        //Each processor checks its own local convergence criterion; then the local information
         //is exchanged among all ranks. Convergence is reached if all ranks satisfy the stopping
         //criterion"
     } else {
