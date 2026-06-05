@@ -35,8 +35,12 @@ void export_to_vtk(Matrix_Sol& M, parameters p, int rank, int size, int num_owne
 
     // Write file
     if (rank == 0) {
-        std::string filename = "output/solution_n" + std::to_string(n) + ".vtk";
+        std::string filename = "solution_n" + std::to_string(n) + ".vtk";
         std::ofstream vtk_file(filename);
+
+        if (!vtk_file) {
+        std::cerr << "Failed to open " << filename << std::endl;
+        return;}
         
         vtk_file << "# vtk DataFile Version 3.0\n"
                  << "Laplace Solver Result\n"

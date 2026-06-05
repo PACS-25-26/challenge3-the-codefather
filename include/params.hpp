@@ -35,6 +35,17 @@ struct parameters{
         return sin(2*M_PI*x)*sin(2*M_PI*y);
     };
 
+
+    // function for boundary conditions (dirichlet and neumann and robin)
+    std::function<double(double,double)> g =[](double x,double y){
+        return 0.0;
+    };
+
+    // function for robin  boundary conditions on u (du/dn + alpha*u = g)
+    std::function<double(double,double)> alpha =[](double x,double y){
+        return 0.0;
+    };
+
 };
 
 parameters parse_args(int argc, char** argv);
