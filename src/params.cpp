@@ -1,6 +1,7 @@
 #include "params.hpp"
 #include <cmath>
 
+// Function to parse command-line arguments and populate the parameters struct
 parameters parse_args(int argc, char** argv){
     parameters p;
     for (int i = 1; i < argc; ++i) {
@@ -101,6 +102,4 @@ std::function<double(double, double)> make_muparser_closure(const std::string& e
             throw std::runtime_error(e.GetMsg());
         }
     };
-}*/
-
-// mpirun -np 4 ./solver --n 256 --tol 1e-6 --max_it 50000 --mode MPI   
+}*/ 

@@ -4,9 +4,10 @@
 #include "params.hpp"
 #include <iostream>
 
+// Forward declarations of solver functions
 double serial_solver(parameters p);
-double omp_solver(parameters p);
-//double mpi_solver(parameters p, int rank, int size); //doppione 
+
+// The hybrid solver will be called by all ranks, but only the master rank will print the final error and timing information
 double hybrid_solver(parameters p, int rank, int size);
 
 #endif //SOLVER_HPP

@@ -14,6 +14,7 @@ void export_to_vtk_3d(Matrix_Sol& M, parameters p, int rank, int size, int num_o
     int rows_to_send = num_owned;
     int start_send_row = 1;
 
+    // Adjust for boundary rows if this rank owns the top or bottom portion of the grid
     if (rank == 0) {
         rows_to_send += 1;    // Include top boundary
         start_send_row = 0;   // Start from local row 0
@@ -22,6 +23,7 @@ void export_to_vtk_3d(Matrix_Sol& M, parameters p, int rank, int size, int num_o
         rows_to_send += 1;    // Include bottom boundary
     }
 
+    // Each row has 'n' columns, so total elements to send is rows_to_send * n
     int send_count = rows_to_send * n; 
     std::vector<int> recv_counts(size, 0);
     std::vector<int> displs(size, 0);

@@ -26,10 +26,12 @@ double Jacobi_update(Matrix_Sol& M, int row_lo, int row_hi,
         }
     }
 
+    // Swap the buffers for the next iteration
     M.swap_buffers();
     return iter_err; 
 }
 
+// Computes the L2 error norm of the current solution against the exact solution
 double L2_err(Matrix_Sol& M, const std::function<double(double,double)>& u_ex) {
 
 
@@ -53,6 +55,7 @@ double L2_err(Matrix_Sol& M, const std::function<double(double,double)>& u_ex) {
     return l2e;
 }
 
+// Initializes the boundary conditions for the solution matrix based on the specified BC type
 void init_boundaries(Matrix_Sol& M, const parameters& p, int rank, int size) {
     if (p.bc_type != DIRICHLET) return;
     double h = M.get_h();
@@ -93,7 +96,7 @@ void init_boundaries(Matrix_Sol& M, const parameters& p, int rank, int size) {
     }
 }
 
-
+// Updates the boundary values for Neumann or Robin conditions after each Jacobi iteration
 void update_boundaries(Matrix_Sol& M, const parameters& p, int rank, int size) {
     // Dirichlet boundaries do not change during Jacobi iterations
     if (p.bc_type == DIRICHLET) return;

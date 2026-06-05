@@ -15,6 +15,7 @@ int main(int argc, char **argv) {
 
     parameters p = parse_args(argc, argv);
 
+    // Only the master rank will print the initial configuration
     if (rank == 0) {
         std::cout << "--- Starting Laplace Solver ---\n"
                   << "Grid size (n): " << p.n << "\n"
@@ -25,6 +26,9 @@ int main(int argc, char **argv) {
                   << "-------------------------------\n";
     }
 
+    // Synchronize all ranks before starting the timer
+    MPI_Barrier(MPI_COMM_WORLD);
+    
     double final_error = 0.0;
     double start_time = MPI_Wtime();
 

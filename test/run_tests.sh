@@ -23,16 +23,7 @@ for n in 16 32 64 128; do
 done
 
 echo ""
-echo "-------- 2. MPI SCALABILITY --------"
-echo "Varying MPI Ranks (np) in 1 2 4 for n=256"
-
-for np in 1 2 4; do
-    echo "--- np=$np ---"
-    mpirun -np $np ./solver --n 256 --tol 1e-6 --max_it 50000 --mode HYBRID | tee -a test/data/mpi_np${np}.log
-done
-
-echo ""
-echo "------- 3. HYBRID SCALABILITY --------"
+echo "------- 2. HYBRID SCALABILITY --------"
 echo "varing both np and NUM_THREADS for n=256"
 
 for np in 1 2 4; do 

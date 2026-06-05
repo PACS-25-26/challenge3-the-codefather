@@ -21,6 +21,8 @@ double serial_solver(parameters p) {
     int it = 0;
     double global_err = p.tol + 1.0;
 
+
+    // The main Jacobi iteration loop
     while (it < p.max_it && global_err > p.tol) {
         ++it;
         double err = Jacobi_update(M, 1, n - 1, p.f);
@@ -28,6 +30,7 @@ double serial_solver(parameters p) {
         global_err = std::sqrt(err * h);
     }
 
+    // Final L2 error check against analytical solution
     double l2_error = std::sqrt(L2_err(M, p.u_ex) * h);
     std::cout << "[SERIAL] Iters: " << it << " | L2 Error: " << l2_error << "\n";
     
