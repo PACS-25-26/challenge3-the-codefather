@@ -142,7 +142,7 @@ double hybrid_solver(parameters p, int rank, int size) {
     }
 
     // Right before the solver finishes, export the data!
-    export_to_vtk(M, p, rank, size, num_owned);
+    export_to_vtk_3d(M, p, rank, size, num_owned);
 
 
     return total_l2_error;

@@ -8,7 +8,7 @@ TARGET = solver
 
 all: $(TARGET) 
 
-$(TARGET): $(OBJ) 
+$(TARGET): $(OBJ) | build output
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 build/%.o: src/%.cpp | build
