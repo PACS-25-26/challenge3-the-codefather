@@ -141,6 +141,11 @@ double hybrid_solver(parameters p, int rank, int size) {
             global_sum = local_sum;
         }
         global_err = std::sqrt(global_sum * h);
+
+       // test script for convergence
+        if(it % p.max_it/10 == 0){
+            std::cout << "iter " << it << " | global_err = " << global_err << "\n";
+        }
     }
 
     // 5. Global L2 error check against analytical solution
