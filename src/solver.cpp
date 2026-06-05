@@ -15,7 +15,7 @@ double serial_solver(parameters p) {
     int n = p.n;
     double h = 1.0 / (n - 1);
     
-    Matrix_Sol M(n, -1, n); // Allocate n internal rows, +2 for ghosts (0 and n-1)
+    Matrix_Sol M(n, 0, n); // Allocate n internal rows, +2 for ghosts (0 and n-1)
     init_boundaries(M, p, 0, 1);
 
     int it = 0;
