@@ -34,7 +34,7 @@ double serial_solver(parameters p) {
     double l2_error = std::sqrt(L2_err(M, p.u_ex) * h);
     std::cout << "[SERIAL] Iters: " << it << " | L2 Error: " << l2_error << "\n";
     
-    export_to_vtk(M, p, 0, 1, n - 2);
+    export_to_vtk_3d(M, p, 0, 1, n - 2);
     return l2_error;
 }
 

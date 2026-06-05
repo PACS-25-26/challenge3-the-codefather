@@ -44,8 +44,8 @@ clean_docs:
 clean:
 	rm -rf build $(TARGET)
 
-# Deep clean: remove build artifacts, output, and docs
-distclean: clean clean_docs
+# Deep clean: remove build artifacts, output
+distclean: clean 
 	rm -rf output/ test/data test/hw.info
 
 .PHONY: all clean distclean docs clean_docs

@@ -37,22 +37,34 @@ parameters parse_args(int argc, char** argv){
             if (bc == "DIRICHLET")  p.bc_type = DIRICHLET;
             else if (bc == "NEUMANN")    p.bc_type = NEUMANN;
             else if (bc == "ROBIN")      p.bc_type = ROBIN;
-        }}
+        }
 
-        /* i need mu parser for this, so for now i will ignore it
-        // 4. Runtime Runtime Expression Functions via muParser
-        else if (str == "--f") {
-            p.f = make_muparser_closure(argv[++i]);
-        } 
-        else if (str == "--u_ex") {
-            p.u_ex = make_muparser_closure(argv[++i]);
-        } 
-        else if (str == "--g") {
-            p.g = make_muparser_closure(argv[++i]);
-        } 
-        else if (str == "--alpha") {
-            p.alpha = make_muparser_closure(argv[++i]);
-        }*/
+        // 4. Mathematical Test Case
+        else if (str == "--case") {
+            std::string tc = argv[++i];
+            if (tc == "SINUSOIDAL") p.test_case = SINUSOIDAL;
+            else if (tc == "EXPONENTIAL") p.test_case = EXPONENTIAL;
+            else if (tc == "POLYNOMIAL") p.test_case = POLYNOMIAL;
+        }
+    }
 
+
+        // --- OVERRIDE LAMBDAS BASED ON TEST CASE ---
+    
+    if (p.test_case == EXPONENTIAL) {
+        // Harmonic function (Delta u = 0)
+        p.u_ex  = [](double x, double y) { return std::exp(x) * std::cos(y); };
+        p.f     = [](double x, double y) { return 0.0; };
+        p.g     = [](double x, double y) { return std::exp(x) * std::cos(y); };
+        p.alpha = [](double x, double y) { return 1.0; }; // Example coefficient
+    } 
+    else if (p.test_case == POLYNOMIAL) {
+        // Quadratic function
+        p.u_ex  = [](double x, double y) { return (x * x) + (y * y); };
+        p.f     = [](double x, double y) { return -4.0; };
+        p.g     = [](double x, double y) { return (x * x) + (y * y); };
+        p.alpha = [](double x, double y) { return 2.0; }; // Example coefficient
+    }
+    // Note: If test_case is SINUSOIDAL, it relies on the defaults already set in the struct.
     return p;
 }

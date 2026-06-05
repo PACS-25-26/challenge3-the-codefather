@@ -22,6 +22,13 @@
     //     Type export in vtk file to visualize in paraview
     enum VTKType { FLAT, SURFACE};
 
+    //     NEW: Type of mathematical test case
+    enum TestCase { SINUSOIDAL, EXPONENTIAL, POLYNOMIAL };
+    /*
+    SINUSOIDAL Perfect for Homogeneous Dirichlet
+    EXPONENTIAL Perfect for Non-Homogeneous Dirichlet
+    POLYNOMIAL Perfect for Non-Homogeneous Neumann or Robin*/
+
 struct parameters{
     
     int n = 32;
@@ -30,6 +37,8 @@ struct parameters{
     Parallel_mode mode = HYBRID;
     BCType bc_type = DIRICHLET; // New parameter to track boundary physics
     VTKType vtk_type = SURFACE; // New parameter to track VTK export type
+    TestCase test_case = SINUSOIDAL;
+    
 
     // forcing term
     std::function<double(double,double)> f =[](double x,double y){
