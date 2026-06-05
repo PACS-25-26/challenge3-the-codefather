@@ -1,33 +1,48 @@
 #!/bin/bash
 
-echo "=== Scalability Test ==="
-echo "Running from project root: $(pwd)"
+# Automatically locate the project root directory relative to this script
+# (Moves up one level from project/test to project/)
+ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+cd "$ROOT_DIR"
+
+echo "=== Scalability Test Setup ==="
+mkdir -p test/data
+mkdir -p output
+
+echo "Extracting hardware info..."
+cat /proc/cpuinfo > test/hw.info
+lscpu >> test/hw.info 2>/dev/null
+echo "Hardware info saved to test/hw.info"
+
 echo ""
-
-echo "---------serial test---------"
-echo "varing n"
-
-for n in 16 32 64 128 256; do
+echo "--------- 1. SERIAL TEST ---------"
+echo "Varying grid size (n)"
+for n in 16 32 64 128; do
     echo -n "n=$n: "
-    mpirun -np 1 ../solver --n $n --tol 1e-6 --max_it 100000
+    mpirun -np 1 ./solver --n $n --tol 1e-6 --max_it 10000 --mode SERIAL | tee -a test/data/serial_runs.log
 done
 
-echo "--------mpi scalability--------"
-echo "varing np"
+echo ""
+echo "-------- 2. MPI SCALABILITY --------"
+echo "Varying MPI Ranks (np) for n=256"
 
 for np in 1 2 4; do
     echo "--- np=$np ---"
-    time mpirun -np $np ../solver --n 128 --tol 1e-6 --max_it 800000
-    echo ""
+    mpirun -np $np ./solver --n 256 --tol 1e-6 --max_it 50000 --mode HYBRID | tee -a test/data/mpi_np${np}.log
 done
 
-echo "-------hybrid scalability--------"
-echo "varing both np and NUM_THREADS"
+echo ""
+echo "------- 3. HYBRID SCALABILITY --------"
+echo "varing both np and NUM_THREADS for n=256"
 
-for np in 1 2 4; do #non ho abbastanza core per tutte queste combinazioni
+for np in 1 2 4; do 
     for threads in 1 2 4; do
-        echo "--- np=$np | OMP_NUM_THREADS=$threads ---"
-        OMP_NUM_THREADS=$threads time mpirun -np $np ../solver --n 128 --tol 1e-6 --max_it 800000
-        echo ""
+    # Prevent oversubscribing basic test setups
+        if [ $((np * threads)) -le 8 ]; then 
+            echo "--- np=$np | OMP_NUM_THREADS=$threads ---"
+            OMP_NUM_THREADS=$threads mpirun -np $np ./solver --n 256 --tol 1e-6 --max_it 50000 --mode HYBRID | tee -a test/data/hybrid_np${np}_omp${threads}.log
+        fi
     done
 done
+
+echo "Tests complete! Logs saved in test/data/"
