@@ -5,88 +5,62 @@
 #include <mpi.h>
 #include <omp.h>
 
-//------------------------
-//        MPI Solver
-//------------------------
-/*
-double mpi_solver(parameters p, int rank, int size){
+//----------------------------
+//          SERIAL solver
+//-----------------------------
+double serial_solver(parameters p) {
+    // Force OpenMP to use exactly 1 thread
+    omp_set_num_threads(1); 
     
-    int n=p.n;
-    //------row division in ranks----------------
-    int inner_row=n-2;
-    int loc_row=inner_row/size;
-
-    //in caso di numero di righe non multiplo di size:
-    int extra_row = inner_row%size; //--->quanti rank avranno una riga in più 
+    int n = p.n;
+    double h = 1.0 / (n - 1);
     
-    if (rank < extra_row)
-        loc_row++;
-    int first_row=1+rank*loc_row + (rank < extra_row ? rank : extra_row);
-    int last_row =first_row+loc_row;
-    
-    // adding ghost row for jacobi solving (need i-1 and i+1 row)
-    int ghost_row_top = (rank > 0) ? 1:0;
-    int ghost_row_bottom = (rank < size-1) ? 1:0;
-    //-------------------------------------------  
+    Matrix_Sol M(n, -1, n); // Allocate n internal rows, +2 for ghosts (0 and n-1)
+    init_boundaries(M, p, 0, 1);
 
-    Matrix_Sol M(n,first_row-ghost_row_top,last_row+ghost_row_bottom);
+    int it = 0;
+    double global_err = p.tol + 1.0;
 
-    //----------solving iteration-----------------
-
-    int it=0;
-    double global_err=100.0;
-    while(it<p.max_it && global_err > p.tol){
+    while (it < p.max_it && global_err > p.tol) {
         ++it;
-
-        //serve mandare e ricevere le righe ghost dai rank adiacenti;
-        
-        if(rank > 0){
-            //sending to previous rank and recieving from previous rank
-            //non sono sicuro di dove puntano righe in ordine sono 0: ghost 1:prima riga 2: seconda ----  devo inviare la riga 1 al rank precedente e da lui ricevere la riga 0 
-            MPI_Sendrecv(M.row_ptr(1), n, MPI_DOUBLE, rank-1, 0,
-                 M.row_ptr(0), n, MPI_DOUBLE, rank-1, 1,
-                 MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        }
-
-        if(rank<size-1){
-            // same as before with last row (ghost one)
-            //controllo anche qui se gli indici sono corretti. in fondo abbiamo righe: loc_row: ultima riga effettiva e loc_row+1: bottom ghost ------ qui devo inviare la riga loc_row e ricevere quella ghost 
-            MPI_Sendrecv(M.row_ptr(loc_row), n, MPI_DOUBLE, rank+1, 1,
-                 M.row_ptr(loc_row + 1), n, MPI_DOUBLE, rank+1, 0,
-                 MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        }
-        double err=Jacobi_update(M,1,loc_row+1,p.f);// non considero la prima e l'ultima riga perchè boundary
-        
-         
-        MPI_Allreduce(&err, &global_err, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+        double err = Jacobi_update(M, 1, n - 1, p.f);
+        update_boundaries(M, p, 0, 1);
+        global_err = std::sqrt(err * h);
     }
 
-    return L2_err(M, p.u_ex);
-
+    double l2_error = std::sqrt(L2_err(M, p.u_ex) * h);
+    std::cout << "[SERIAL] Iters: " << it << " | L2 Error: " << l2_error << "\n";
+    
+    export_to_vtk(M, p, 0, 1, n - 2);
+    return l2_error;
 }
-    */
 
 //----------------------------
 //              OMP solver
 //-----------------------------
-
-double omp_solver(parameters p){
-
-    // identica al seriale 
-    int n=p.n;
-    Matrix_Sol M(n,0,n);
-    int it = 0;
-
-    double err = 100.0;
+double omp_solver(parameters p) {
+    // Relies on environment variable OMP_NUM_THREADS (handled in run script)
+    int n = p.n;
+    double h = 1.0 / (n - 1);
     
-    while(it<p.max_it && err > p.tol){
+    Matrix_Sol M(n, -1, n);
+    init_boundaries(M, p, 0, 1);
+
+    int it = 0;
+    double global_err = p.tol + 1.0;
+
+    while (it < p.max_it && global_err > p.tol) {
         ++it;
-        err=Jacobi_update(M,1,n-1,p.f); // unica differenza è in jacobi su come agisce
+        double err = Jacobi_update(M, 1, n - 1, p.f);
+        update_boundaries(M, p, 0, 1);
+        global_err = std::sqrt(err * h);
     }
 
-    //final parto for plotting?
-    return L2_err(M,p.u_ex);
-
+    double l2_error = std::sqrt(L2_err(M, p.u_ex) * h);
+    std::cout << "[OMP] Iters: " << it << " | L2 Error: " << l2_error << "\n";
+    
+    export_to_vtk(M, p, 0, 1, n - 2);
+    return l2_error;
 }
 
 //----------------------------
@@ -148,10 +122,6 @@ double hybrid_solver(parameters p, int rank, int size) {
         }
         global_err = std::sqrt(global_sum * h);
 
-       // test script for convergence
-        if(it % p.max_it/10 == 0){
-            std::cout << "iter " << it << " | global_err = " << global_err << "\n";
-        }
     }
 
     // 5. Global L2 error check against analytical solution
@@ -168,7 +138,7 @@ double hybrid_solver(parameters p, int rank, int size) {
     double total_l2_error = std::sqrt(global_l2 * h);
 
     if (rank == 0) {
-        std::cout << ">> Iterations: " << it << " | Final Global L2 Error: " << total_l2_error << "\n";
+        std::cout << "[HYBRID] Iters: " << it << " | Final Global L2 Error: " << total_l2_error << "\n";
     }
 
     // Right before the solver finishes, export the data!
@@ -179,24 +149,3 @@ double hybrid_solver(parameters p, int rank, int size) {
 
 }
 
-
-
-// just testing if it works
-
-double serial_solver(parameters p){
-
-    int n=p.n;
-    Matrix_Sol M(n,0,n);
-    long unsigned int it = 0;
-
-    double err = 100.0;
-
-    while(it<p.max_it && err > p.tol){
-        ++it;
-        err=Jacobi_update(M,1,n-1,p.f);// non considero la prima e l'ultima riga perchè boundary
-    }
-
-    //final parto for plotting?
-    return L2_err(M,p.u_ex);
-
-}
