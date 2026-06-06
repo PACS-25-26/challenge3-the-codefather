@@ -143,7 +143,7 @@ project/
 
 ## 5. Automated Benchmarking Suite
 
-An automated execution script is provided in the `test/` directory. It profiles the solver under two separate regimes:
+An automated execution script is provided in the `test/` directory. Our resault logs can be seen in `test/tes_result` and they are discussed in RESULT.md. It profiles the solver under two separate regimes:
 1. **Serial Grid Scaling:** Measures performance trends as grid refinement levels double ($16 \times 16$ to $128 \times 128$).
 2. **Hybrid Parallel Scaling:** Evaluates compute efficiency across combinations of MPI distributed memory ranks and OpenMP shared memory threads for a fixed $256 \times 256$ resolution.
 
@@ -152,4 +152,11 @@ Make sure the bash script has permission to execute, then run it from the root d
 ```bash
 chmod +x test/run_tests.sh
 ./test/run_tests.sh
+```
+
+### Runningfeature_tests:
+this script was used to test the different features of the program:
+```bash
+chmod +x test/feature_tests.sh
+./test/feature_tests.sh
 ```
