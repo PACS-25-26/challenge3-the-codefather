@@ -75,14 +75,7 @@ parameters parse_args(int argc, char** argv){
             else if (bc == "NEUMANN")    p.bc_type = NEUMANN;
             else if (bc == "ROBIN")      p.bc_type = ROBIN;
         }
-
-        // 4. Mathematical Test Case
-        else if (str == "--case") {
-            std::string tc = argv[++i];
-            if (tc == "SINUSOIDAL") p.test_case = SINUSOIDAL;
-            else if (tc == "EXPONENTIAL") p.test_case = EXPONENTIAL;
-            else if (tc == "POLYNOMIAL") p.test_case = POLYNOMIAL;
-        }
+        
         else if (str == "--algo") {
             std::string alg = argv[++i];
         if (alg == "JACOBI")   p.algo_type = POINT_JACOBI;
