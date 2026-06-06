@@ -46,6 +46,11 @@ parameters parse_args(int argc, char** argv){
             else if (tc == "EXPONENTIAL") p.test_case = EXPONENTIAL;
             else if (tc == "POLYNOMIAL") p.test_case = POLYNOMIAL;
         }
+        else if (str == "--algo") {
+            std::string alg = argv[++i];
+        if (alg == "JACOBI")   p.algo_type = POINT_JACOBI;
+        else if (alg == "SCHWARZ") p.algo_type = SCHWARZ;
+        }
     }
 
 

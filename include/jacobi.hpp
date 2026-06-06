@@ -73,6 +73,7 @@ class Matrix_Sol{
 
 // main function:
 
+// Performs one Jacobi iteration over the specified local row range and returns the raw squared error sum for global reduction
 double Jacobi_update(Matrix_Sol& M, int row_lo, int row_hi, const std::function<double(double,double)>& f);
 
 //to compute L2 error against exact solution (for testing purposes, not used in main solver loop)
@@ -84,6 +85,8 @@ void init_boundaries(Matrix_Sol& M, const parameters& p, int rank, int size);
 // Updates the boundaries dynamically for Neumann/Robin
 void update_boundaries(Matrix_Sol& M, const parameters& p, int rank, int size);
 
+// Performs local Schwarz iterations within the assigned subdomain rows
+double Schwarz_local_solve(Matrix_Sol& M, int row_lo, int row_hi, const parameters& p, int rank, int size);
 
 #endif //JACOBI_HPP
 

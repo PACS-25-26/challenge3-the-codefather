@@ -140,11 +140,63 @@ void update_boundaries(Matrix_Sol& M, const parameters& p, int rank, int size) {
     }
 }
 
+// Performs local Schwarz iterations within the assigned subdomain rows and returns the raw squared error sum for global reduction
+double Schwarz_local_solve(Matrix_Sol& M, int row_lo, int row_hi, const parameters& p, int rank, int size) {
+    const double h = M.get_h();
+    const int n = M.get_n();
+    const int global_row_start = M.get_row_start();
+    
+    // 1. Save state at the start of the macro-step to calculate global convergence later
+    std::vector<double> U_start_step((row_hi - row_lo + 2) * n, 0.0);
+    for (int i = row_lo; i < row_hi; ++i) {
+        for (int j = 0; j < n; ++j) {
+            U_start_step[(i - row_lo) * n + j] = M.at(i, j);
+        }
+    }
 
+    int inner_it = 0;
+    double inner_err = p.inner_tol + 1.0;
 
+    // 2. Local Subdomain Solution Loop
+    while (inner_it < p.inner_max_it && inner_err > p.inner_tol) {
+        inner_err = 0.0;
 
+        // Perform local Jacobi relaxation sweeps within owned domain rows
+        #pragma omp parallel for reduction(+:inner_err) collapse(2)
+        for (int i = row_lo; i < row_hi; ++i) {
+            for (int j = 1; j < n - 1; ++j) {
+                int iglo = global_row_start + i;
+                
+                double U_next = 0.25 * (M.at(i - 1, j) + M.at(i + 1, j) + 
+                                       M.at(i, j - 1) + M.at(i, j + 1) + 
+                                       p.f(iglo * h, j * h) * h * h);
+                M.at_new(i, j) = U_next;
+                
+                double diff = U_next - M.at(i, j);
+                inner_err += diff * diff;
+            }
+        }
+        
+        M.swap_buffers();
+        
+        // Dynamically update Neumann/Robin boundary elements reflecting updated internal values
+        update_boundaries(M, p, rank, size);
+        
+        inner_err = std::sqrt(inner_err * h);
+        inner_it++;
+    }
 
-
+    // 3. Compute the outer difference variance for global convergence calculation
+    double outer_diff_sq = 0.0;
+    for (int i = row_lo; i < row_hi; ++i) {
+        for (int j = 1; j < n - 1; ++j) {
+            double diff = M.at(i, j) - U_start_step[(i - row_lo) * n + j];
+            outer_diff_sq += diff * diff;
+        }
+    }
+    
+    return outer_diff_sq; // Return raw squared sum for MPI reduction
+}
 
 
 

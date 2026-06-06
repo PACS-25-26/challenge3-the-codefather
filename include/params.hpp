@@ -29,15 +29,22 @@
     EXPONENTIAL Perfect for Non-Homogeneous Dirichlet
     POLYNOMIAL Perfect for Non-Homogeneous Neumann or Robin*/
 
+    enum AlgoType { POINT_JACOBI, SCHWARZ };
+
 struct parameters{
     
     int n = 32;
     double tol =1e-5;
     int max_it=1000;
+    // Schwarz-specific configuration fields
+    int inner_max_it = 15;        // Number of local inner iterations per outer communication step
+    double inner_tol = 1e-7;      // Local convergence tolerance threshold
     Parallel_mode mode = HYBRID;
     BCType bc_type = DIRICHLET; // New parameter to track boundary physics
     VTKType vtk_type = SURFACE; // New parameter to track VTK export type
     TestCase test_case = SINUSOIDAL;
+    AlgoType algo_type = POINT_JACOBI;
+
     
 
     // forcing term

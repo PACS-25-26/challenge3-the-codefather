@@ -25,8 +25,16 @@ double serial_solver(parameters p) {
     // The main Jacobi iteration loop
     while (it < p.max_it && global_err > p.tol) {
         ++it;
-        double err = Jacobi_update(M, 1, n - 1, p.f);
-        update_boundaries(M, p, 0, 1);
+        double err = 0.0;
+        
+        if (p.algo_type == POINT_JACOBI) {
+            err = Jacobi_update(M, 1, n - 1, p.f);
+            update_boundaries(M, p, 0, 1);
+        } else {
+            // Schwarz iteration behaves as a complete local system solve
+            err = Schwarz_local_solve(M, 1, n - 1, p, 0, 1);
+        }
+        
         global_err = std::sqrt(err * h);
     }
 
@@ -83,10 +91,14 @@ double hybrid_solver(parameters p, int rank, int size) {
         }
 
         // 3. Update local row space (always 1 to num_owned + 1 because bounds are exclusive)
-        double local_sum = Jacobi_update(M, 1, num_owned + 1, p.f);
-
-        //Dynamically recalculate Neumann/Robin boundaries!
-        update_boundaries(M, p, rank, size);
+        double local_sum = 0.0;
+        
+        if (p.algo_type == POINT_JACOBI) {
+            local_sum = Jacobi_update(M, 1, num_owned + 1, p.f);
+            update_boundaries(M, p, rank, size);
+        } else {
+            local_sum = Schwarz_local_solve(M, 1, num_owned + 1, p, rank, size);
+        }
 
         // 4. Mathematically Correct Parallel Reduction
         double global_sum = 0.0;
