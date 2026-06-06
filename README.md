@@ -78,9 +78,10 @@ Additional Make targets available:
 ## 4. Usage & Command-Line Arguments
 
 The compiled executable `solver` can be run manually with highly customizable parameters.
+it is adviced to always use OMP_NUM_THREADS = numompthr to avoid letting the system decide an stall the program
 
 ```bash
-mpirun -np <ranks> ./solver [arguments]
+OMP_NUM_THREADS mpirun -np <ranks> ./solver [arguments]
 ```
 
 ### Available Arguments:
@@ -108,12 +109,12 @@ mpirun -np <ranks> ./solver [arguments]
 
 **1. Block Jacobi (Schwarz) Iteration with Robin Boundaries:**
 ```bash
-mpirun -np 4 ./solver --n 128 --mode HYBRID --bc_type ROBIN --case POLYNOMIAL --algo SCHWARZ --inner_it 20 --vtk_type SURFACE
+OMP_NUM_THREADS=2 mpirun -np 4 ./solver --n 128 --mode HYBRID --bc_type ROBIN --case POLYNOMIAL --algo SCHWARZ --inner_it 20 --vtk_type SURFACE
 ```
 
 **2. Custom Equations via muParser (Dynamic Runtime Parsing):**
 ```bash
-mpirun -np 4 ./solver --n 64 --mode HYBRID --bc_type DIRICHLET --eq_f "8 * pi^2 * sin(2 * pi * x) * sin(2 * pi * y)" --eq_g "0.0" --eq_uex "sin(2 * pi * x) * sin(2 * pi * y)"
+OMP_NUM_THREADS=2 mpirun -np 4 ./solver --n 64 --mode HYBRID --bc_type DIRICHLET --eq_f "8 * pi^2 * sin(2 * pi * x) * sin(2 * pi * y)" --eq_g "0.0" --eq_uex "sin(2 * pi * x) * sin(2 * pi * y)"
 ```
 
 ---
