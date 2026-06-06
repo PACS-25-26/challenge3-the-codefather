@@ -154,7 +154,7 @@ chmod +x test/run_tests.sh
 ./test/run_tests.sh
 ```
 
-### Runningfeature_tests:
+### Running feature_tests:
 this script was used to test the different features of the program:
 ```bash
 chmod +x test/feature_tests.sh
