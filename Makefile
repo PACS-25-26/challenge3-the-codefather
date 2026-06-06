@@ -1,5 +1,6 @@
 CXX      = mpic++
-CXXFLAGS = -std=c++23 -O2 -fopenmp -Iinclude
+CXXFLAGS = -std=c++23 -O2 -fopenmp -Iinclude 
+LDFLAGS  = -lmuparser
 
 SRC = src/main.cpp src/solver.cpp src/jacobi.cpp src/io.cpp src/params.cpp
 OBJ = $(SRC:src/%.cpp=build/%.o)
@@ -10,7 +11,7 @@ all: $(TARGET)
 
 # Link object files into the final executable
 $(TARGET): $(OBJ) | build output
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 # Pattern rule to compile source files into object files
 build/%.o: src/%.cpp | build

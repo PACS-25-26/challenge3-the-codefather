@@ -1,5 +1,42 @@
 #include "params.hpp"
 #include <cmath>
+#include <string>
+#include <vector>
+#include <memory>
+#include <omp.h>
+#include "muParser.h"
+
+// Helper function to create an OpenMP-safe lambda for muParser
+std::function<double(double, double)> create_parser(const std::string& expr) {
+    int max_threads = omp_get_max_threads();
+    
+    // Structure to hold independent parsing states for each thread
+    struct ThreadParser {
+        mu::Parser p;
+        double x;
+        double y;
+    };
+    
+    // Allocate a vector of parsers (one per potential OpenMP thread)
+    auto parsers = std::make_shared<std::vector<ThreadParser>>(max_threads);
+    
+    for (int i = 0; i < max_threads; ++i) {
+        (*parsers)[i].p.DefineVar("x", &(*parsers)[i].x);
+        (*parsers)[i].p.DefineVar("y", &(*parsers)[i].y);
+        (*parsers)[i].p.DefineConst("pi", M_PI); // Add standard constants
+        (*parsers)[i].p.SetExpr(expr);
+    }
+
+    // Return a lambda that captures the shared vector by value.
+    // Each thread modifies only its own parser state.
+    return [parsers](double x, double y) -> double {
+        int tid = omp_get_thread_num();
+        auto& tp = (*parsers)[tid];
+        tp.x = x;
+        tp.y = y;
+        return tp.p.Eval();
+    };
+}
 
 // Function to parse command-line arguments and populate the parameters struct
 parameters parse_args(int argc, char** argv){
@@ -50,6 +87,30 @@ parameters parse_args(int argc, char** argv){
             std::string alg = argv[++i];
         if (alg == "JACOBI")   p.algo_type = POINT_JACOBI;
         else if (alg == "SCHWARZ") p.algo_type = SCHWARZ;
+        }
+        else if (str == "--case") {
+            std::string tc = argv[++i];
+            if (tc == "SINUSOIDAL") p.test_case = SINUSOIDAL;
+            else if (tc == "EXPONENTIAL") p.test_case = EXPONENTIAL;
+            else if (tc == "POLYNOMIAL") p.test_case = POLYNOMIAL;
+            else if (tc == "CUSTOM") p.test_case = CUSTOM;
+        }
+        
+        else if (str == "--eq_f") {
+            p.f = create_parser(argv[++i]);
+            p.test_case = CUSTOM; // Automatically switch to custom to prevent overrides
+        }
+        else if (str == "--eq_g") {
+            p.g = create_parser(argv[++i]);
+            p.test_case = CUSTOM;
+        }
+        else if (str == "--eq_alpha") {
+            p.alpha = create_parser(argv[++i]);
+            p.test_case = CUSTOM;
+        }
+        else if (str == "--eq_uex") {
+            p.u_ex = create_parser(argv[++i]);
+            p.test_case = CUSTOM;
         }
     }
 

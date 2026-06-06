@@ -22,14 +22,18 @@
     //     Type export in vtk file to visualize in paraview
     enum VTKType { FLAT, SURFACE};
 
-    //     NEW: Type of mathematical test case
-    enum TestCase { SINUSOIDAL, EXPONENTIAL, POLYNOMIAL };
+    //Type of mathematical test case
+    enum TestCase { SINUSOIDAL, EXPONENTIAL, POLYNOMIAL, CUSTOM };
     /*
     SINUSOIDAL Perfect for Homogeneous Dirichlet
     EXPONENTIAL Perfect for Non-Homogeneous Dirichlet
-    POLYNOMIAL Perfect for Non-Homogeneous Neumann or Robin*/
+    POLYNOMIAL Perfect for Non-Homogeneous Neumann or Robin
+    CUSTOM Custom test case */
 
+    //    Type of solver algorithm
     enum AlgoType { POINT_JACOBI, SCHWARZ };
+
+    
 
 struct parameters{
     
