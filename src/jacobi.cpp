@@ -1,0 +1,205 @@
+#include "jacobi.hpp"
+#include <omp.h>
+
+double Jacobi_update(Matrix_Sol& M, int row_lo, int row_hi,
+                     const std::function<double(double,double)>& f) 
+{
+    const double h = M.get_h();
+    const int n = M.get_n();
+    const int global_row_start = M.get_row_start();
+    double iter_err = 0.0;
+
+    // Maximizes shared-memory execution efficiency across threads
+    #pragma omp parallel for reduction(+:iter_err) collapse(2)
+    for (int i = row_lo; i < row_hi; ++i) {
+        for (int j = 1; j < n - 1; ++j) {
+            int iglo = global_row_start + i;
+            
+            double Uk = 0.25 * (M.at(i - 1, j) + M.at(i + 1, j) + 
+                                M.at(i, j - 1) + M.at(i, j + 1) + 
+                                f(iglo * h, j * h) * h * h);
+            
+            M.at_new(i, j) = Uk;
+
+            double diff = Uk - M.at(i, j);
+            iter_err += diff * diff; // Return raw squared sum for global MPI reduction
+        }
+    }
+
+    // Swap the buffers for the next iteration
+    M.swap_buffers();
+    return iter_err; 
+}
+
+// Computes the L2 error norm of the current solution against the exact solution
+double L2_err(Matrix_Sol& M, const std::function<double(double,double)>& u_ex) {
+
+
+    const double h = M.get_h();
+    const int n = M.get_n();
+    const int global_row_start = M.get_row_start();
+    const int num_owned = M.local_rows() - 2; 
+    double l2e = 0.0;
+
+    #pragma omp parallel for reduction(+:l2e) collapse(2)
+    for (int i = 1; i <= num_owned; ++i) {
+        for (int j = 1; j < n-1; ++j) {
+            double xi = (global_row_start + i) * h;
+            double yj = j * h;
+
+            double diff = M.at(i, j) - u_ex(xi, yj);
+            l2e += diff * diff;
+        }
+    }
+
+    return l2e;
+}
+
+// Initializes the boundary conditions for the solution matrix based on the specified BC type
+void init_boundaries(Matrix_Sol& M, const parameters& p, int rank, int size) {
+    if (p.bc_type != DIRICHLET) return;
+    double h = M.get_h();
+    int n = M.get_n();
+    int global_start = M.get_row_start();
+    int num_owned = M.local_rows() - 2;
+
+    // Apply Left and Right borders for all ranks
+    #pragma omp parallel for
+    for (int i = 1; i <= num_owned; ++i) {
+        double y = (global_start + i) * h;
+        // Left boundary (j = 0)
+        M.at(i, 0) = p.g(0.0, y);
+        M.at_new(i, 0) = p.g(0.0, y);
+        // Right boundary (j = n - 1)
+        M.at(i, n - 1) = p.g(1.0, y);
+        M.at_new(i, n - 1) = p.g(1.0, y);
+    }
+
+    // Apply Top border (only if you own the top global row)
+    if (rank == 0) {
+        #pragma omp parallel for
+        for (int j = 0; j < n; ++j) {
+            double x = j * h;
+            M.at(0, j) = p.g(x, 0.0);
+            M.at_new(0, j) = p.g(x, 0.0);
+        }
+    }
+
+    // Apply Bottom border (only if you own the bottom global row)
+    if (rank == size - 1) {
+        #pragma omp parallel for
+        for (int j = 0; j < n; ++j) {
+            double x = j * h;
+            M.at(num_owned + 1, j) = p.g(x, 1.0);
+            M.at_new(num_owned + 1, j) = p.g(x, 1.0);
+        }
+    }
+}
+
+// Updates the boundary values for Neumann or Robin conditions after each Jacobi iteration
+void update_boundaries(Matrix_Sol& M, const parameters& p, int rank, int size) {
+    // Dirichlet boundaries do not change during Jacobi iterations
+    if (p.bc_type == DIRICHLET) return;
+
+    double h = M.get_h();
+    int n = M.get_n();
+    int global_start = M.get_row_start();
+    int num_owned = M.local_rows() - 2;
+
+    #pragma omp parallel for
+    for (int i = 1; i <= num_owned; ++i) {
+        double y = (global_start + i) * h;
+        
+        // Update Left boundary (uses internal node at j=1)
+        double a_left = p.alpha(0.0, y);
+        M.at(i, 0) = (M.at(i, 1) + h * p.g(0.0, y)) / (1.0 + h * a_left);
+
+        // Update Right boundary (uses internal node at j=n-2)
+        double a_right = p.alpha(1.0, y);
+        M.at(i, n - 1) = (M.at(i, n - 2) + h * p.g(1.0, y)) / (1.0 + h * a_right);
+    }
+
+    // Top Neumann/Robin Update
+    if (rank == 0) {
+        #pragma omp parallel for
+        for (int j = 0; j < n; ++j) {
+            double x = j * h;
+            double a_top = p.alpha(x, 0.0);
+            M.at(0, j) = (M.at(1, j) + h * p.g(x, 0.0)) / (1.0 + h * a_top);
+        }
+    }
+
+    // Bottom Neumann/Robin Update
+    if (rank == size - 1) {
+        #pragma omp parallel for
+        for (int j = 0; j < n; ++j) {
+            double x = j * h;
+            double a_bot = p.alpha(x, 1.0);
+            M.at(num_owned + 1, j) = (M.at(num_owned, j) + h * p.g(x, 1.0)) / (1.0 + h * a_bot);
+        }
+    }
+}
+
+// Performs local Schwarz iterations within the assigned subdomain rows and returns the raw squared error sum for global reduction
+double Schwarz_local_solve(Matrix_Sol& M, int row_lo, int row_hi, const parameters& p, int rank, int size) {
+    const double h = M.get_h();
+    const int n = M.get_n();
+    const int global_row_start = M.get_row_start();
+    
+    // 1. Save state at the start of the macro-step to calculate global convergence later
+    std::vector<double> U_start_step((row_hi - row_lo + 2) * n, 0.0);
+    for (int i = row_lo; i < row_hi; ++i) {
+        for (int j = 0; j < n; ++j) {
+            U_start_step[(i - row_lo) * n + j] = M.at(i, j);
+        }
+    }
+
+    int inner_it = 0;
+    double inner_err = p.inner_tol + 1.0;
+
+    // 2. Local Subdomain Solution Loop
+    while (inner_it < p.inner_max_it && inner_err > p.inner_tol) {
+        inner_err = 0.0;
+
+        // Perform local Jacobi relaxation sweeps within owned domain rows
+        #pragma omp parallel for reduction(+:inner_err) collapse(2)
+        for (int i = row_lo; i < row_hi; ++i) {
+            for (int j = 1; j < n - 1; ++j) {
+                int iglo = global_row_start + i;
+                
+                double U_next = 0.25 * (M.at(i - 1, j) + M.at(i + 1, j) + 
+                                       M.at(i, j - 1) + M.at(i, j + 1) + 
+                                       p.f(iglo * h, j * h) * h * h);
+                M.at_new(i, j) = U_next;
+                
+                double diff = U_next - M.at(i, j);
+                inner_err += diff * diff;
+            }
+        }
+        
+        M.swap_buffers();
+        
+        // Dynamically update Neumann/Robin boundary elements reflecting updated internal values
+        update_boundaries(M, p, rank, size);
+        
+        inner_err = std::sqrt(inner_err * h);
+        inner_it++;
+    }
+
+    // 3. Compute the outer difference variance for global convergence calculation
+    double outer_diff_sq = 0.0;
+    for (int i = row_lo; i < row_hi; ++i) {
+        for (int j = 1; j < n - 1; ++j) {
+            double diff = M.at(i, j) - U_start_step[(i - row_lo) * n + j];
+            outer_diff_sq += diff * diff;
+        }
+    }
+    
+    return outer_diff_sq; // Return raw squared sum for MPI reduction
+}
+
+
+
+
+
+
